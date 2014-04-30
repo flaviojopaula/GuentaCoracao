@@ -11,8 +11,12 @@
 #include "task.h"
 #include "queue.h"
 #include "semphr.h"
+#include "system_LPC17xx.h"
+#include "LPC17xx.h"
 
-#include "main.h"
+#include "defs.h"
+
+#include "simulator/simulator.h"
 
 #define USERTASK_STACK_SIZE configMINIMAL_STACK_SIZE
 
@@ -20,35 +24,19 @@ void __error__(char *pcFilename, unsigned long ulLine) {
 }
 
 static void setupHardware(void) {
-	// TODO: Put hardware configuration and initialisation in here
-	
-	// Warning: If you do not initialize the hardware clock, the timings will be inaccurate
+	simulator_init();
+	SystemClockUpdate();
 }
 
 /**
- * Simple task that just toggles between to states
+ * Task para realizar a comunicacao com o simulador utilizando a porta paralela
  */
-void vUserTask1(void *pvParameters) {
-	static int iState = 0;
-
+void vSimCommTask(void *pvParameters) {
+	UINT unReceivedEcg;
 	while (1) {
-		if (iState == 0) {
-			iState = 1;
-		} else {
-			iState = 0;
-		}
-		vTaskDelay(100);
-	}
-}
-
-/**
- * Simple task that increments a counter
- */
-void vUserTask2(void *pvParameters) {
-	int count = 0;
-	while (1) {
-		count++;
-		vTaskDelay(101) ;
+		unReceivedEcg = receiveECG();
+		// TODO: Colocar o valor recebido no conversor DA
+		vTaskDelay(SIM_COMM_TIME);
 	}
 }
 
@@ -61,8 +49,8 @@ int main(void) {
 	/* 
 	 * Start the tasks defined within this file/specific to this demo. 
 	 */
-	xTaskCreate( vUserTask1, ( signed portCHAR * ) "Task1", USERTASK_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
-	xTaskCreate( vUserTask2, ( signed portCHAR * ) "Task2", USERTASK_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( vSimCommTask, ( signed portCHAR * ) "SimCommTask", USERTASK_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+//	xTaskCreate( vUserTask2, ( signed portCHAR * ) "Task2", USERTASK_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
 
 	/* 
 	 * Start the scheduler. 
