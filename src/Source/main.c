@@ -12,7 +12,7 @@
 #include "queue.h"
 #include "semphr.h"
 
-#include "main.h"
+//#include "main.h"
 
 #define USERTASK_STACK_SIZE configMINIMAL_STACK_SIZE
 
@@ -56,6 +56,7 @@ void vUserTask2(void *pvParameters) {
  * Program entry point 
  */
 int main(void) {
+
 	setupHardware();
 
 	/* 
